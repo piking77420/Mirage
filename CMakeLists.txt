@@ -1,5 +1,13 @@
 cmake_minimum_required(VERSION 3.26)
 
+if(MSVC)
+    if(CMAKE_GENERATOR_PLATFORM STREQUAL "x64")
+        message(STATUS "Building for x64 architecture.")
+    else()
+        message(FATAL_ERROR "This project requires x64 architecture.")
+    endif()
+endif()
+
 project(Mirage VERSION 0.1.0 LANGUAGES C CXX)
 
 add_subdirectory(Mirage)

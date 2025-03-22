@@ -1,9 +1,11 @@
 #include "MirageWindowProcessParser.hpp"
 
 #include "MirageTypeDef.hpp"
+#include "simple_type_name.hpp"
 
 #include <cassert>
 #include <iostream>
+#include <regex>
 
 #ifdef _WIN32
 
@@ -25,6 +27,7 @@ std::string cleanUpTypeName(const std::string& typeName)
 CComPtr<IDiaDataSource> dataSource;
 
 static uint64_t symhandle = 42; // no need to be handle
+
 
 void OpenPdb(const std::wstring& pdbPath, CComPtr<IDiaSession>& session, CComPtr<IDiaSymbol>& globalScope)
 {
@@ -87,7 +90,7 @@ void HandleEnum(mirage::MirageContextData* mirageContextData, CComPtr<IDiaSessio
                         continue;
 
                     wchar_t* childname;
-                    VARIANT var;
+                    VARIANT var; 
 
                     if (SUCCEEDED(symbolChild->get_name(&childname)) && SUCCEEDED(symbolChild->get_value(&var)))
                     {
@@ -96,6 +99,10 @@ void HandleEnum(mirage::MirageContextData* mirageContextData, CComPtr<IDiaSessio
 
                         switch (var.vt)
                         {
+                        case VT_BOOL: // bool v
+                            enumMember.enumTypeValue = mirage::EnumTypeValue::INT;
+                            enumMember.value.boolv = var.boolVal;
+                            break;
                         case VT_I2:
                         case VT_I4:  // Integer value
                             enumMember.enumTypeValue = mirage::EnumTypeValue::INT;
@@ -136,16 +143,68 @@ void HandleEnum(mirage::MirageContextData* mirageContextData, CComPtr<IDiaSessio
     }
 }
 
+void HandleUserType(mirage::MirageContextData* mirageContextData, CComPtr<IDiaSession> session, CComPtr<IDiaSymbol> globalScope)
+{
+    CComPtr<IDiaEnumSymbols> enumUserTypeSymbol;
+    HRESULT result = globalScope->findChildren(SymTagUDT, nullptr, nsNone, &enumUserTypeSymbol);
+
+    HRESULT hr;
+    ULONG cout = 0;
+
+    CComPtr<IDiaSymbol> symbol;
+    while (SUCCEEDED(hr = enumUserTypeSymbol->Next(1, &symbol, &cout)) && cout > 0)
+    {
+        if (!symbol)
+            continue;
+
+        wchar_t* name = nullptr;
+
+        if (SUCCEEDED(symbol->get_name(&name)))
+        {
+            // SHOUDL USE THIS TO LINK APP RUNTIME TO DATA
+            std::string sname = cleanUpTypeName(typeid(std::vector<std::wstring>).name());
+            std::wstring wname = name;
+
+            std::string converted = std::string(wname.begin(), wname.end());
+            if (converted == sname)
+            {
+                //__debugbreak();
+            }
+
+
+            CComPtr<IDiaEnumSymbols> enumfieldSymbolMember;
+            if (SUCCEEDED(symbol->findChildren(SymTagData, nullptr, nsfCaseInsensitive, &enumfieldSymbolMember)))
+            {
+                /*
+                HRESULT resultEnumMember;
+
+                wchar_t* fieldName = nullptr;
+                if (SUCCEEDED(symbolChild->get_name(&fieldName)))
+                {
+
+                }*/
+
+                enumfieldSymbolMember.Release();
+            }
+        }
+
+        symbol.Release();
+
+    }
+
+}
+
 void ParsePdb(mirage::MirageContextData* mirageContextData, const std::wstring& pdbPath)
 {
     CComPtr<IDiaSession> session;
     CComPtr<IDiaSymbol> globalScope;
     OpenPdb(pdbPath, session, globalScope);
-    HandleEnum(mirageContextData, session, globalScope);
-    
 
-   
+    std::thread t = std::thread([&]() {HandleEnum(mirageContextData, session, globalScope); });
+    std::thread t2 = std::thread([&]() {HandleUserType(mirageContextData, session, globalScope); });   
 
+    t.join();
+    t2.join();
 }
 
 

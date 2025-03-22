@@ -3,13 +3,26 @@
 #include <mutex>
 #include <vector>
 #include <string>
+#include <unordered_map>
 
 
 namespace mirage
 {
+	using MirageTypeId = size_t;
+
+	union TypeValue
+	{
+		bool boolv;
+		int intv;
+		uint32_t uintv;
+		float floatv;
+		double doublev;
+	};
+
 	enum EnumTypeValue
 	{
 		NONE,
+		BOOL,
 		INT,
 		UIINT,
 		FLOAT,
@@ -20,13 +33,7 @@ namespace mirage
 	{
 		std::string name;
 		EnumTypeValue enumTypeValue;
-		union
-		{
-			int intv;
-			uint32_t uintv;
-			float floatv;
-			double doublev;
-		}value;
+		TypeValue value;
 	};
 
 	struct MirageEnum
@@ -35,10 +42,18 @@ namespace mirage
 		std::vector<EnumMember> enumMember;
 	};
 
+	struct Field
+	{
+		EnumTypeValue enumTypeValue;
+		uint32_t offset;
+	};
+
 
 	struct MirageContextData
 	{
 		std::mutex lock;
+		size_t mirageIdCount = 0;
+
 		std::vector<MirageEnum> mirageEnum;
 	};
 }

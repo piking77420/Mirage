@@ -78,44 +78,41 @@ void HandleEnum(mirage::MirageContextData* mirageContextData, CComPtr<IDiaSessio
                     if (!symbolChild)
                         continue;
 
-                    wchar_t* childname = nullptr;
-                    VARIANT var = {};
+                    wchar_t* childname;
+                    VARIANT var;
 
                     if (SUCCEEDED(symbolChild->get_name(&childname)) && SUCCEEDED(symbolChild->get_value(&var)))
                     {
                         mirage::EnumMember enumMember;
+                        enumMember.enumTypeValue = mirage::EnumTypeValue::NONE;
 
                         switch (var.vt)
                         {
+                        case VT_I2:
                         case VT_I4:  // Integer value
                             enumMember.enumTypeValue = mirage::EnumTypeValue::INT;
                             enumMember.value.intv = var.intVal;
-                            ws = std::wstring(childname);
-                            menum.enumMember.push_back(enumMember);
                             break;
+                        case VT_UI2:
                         case VT_UI4:
                             enumMember.enumTypeValue = mirage::EnumTypeValue::UIINT;
                             enumMember.value.uintv = var.uintVal;
-                            ws = std::wstring(childname);
-                            menum.enumMember.push_back(enumMember);
                             break;
                         case VT_R4:  // Float value
                             enumMember.enumTypeValue = mirage::EnumTypeValue::FLOAT;
                             enumMember.value.floatv = var.fltVal;
-                            ws = std::wstring(childname);
-                            menum.enumMember.push_back(enumMember);
                             break;
                         case VT_R8:  // Double value
                             enumMember.enumTypeValue = mirage::EnumTypeValue::DOUBLE;
                             enumMember.value.doublev = var.dblVal;
-                            ws = std::wstring(childname);
-                            menum.enumMember.push_back(enumMember);
                             break;
                         default:
                             break;
                         }
 
-                       
+                        ws = std::wstring(childname);
+                        enumMember.name = std::string(ws.begin(), ws.end());
+                        menum.enumMember.push_back(enumMember);
                     }
                 
                     symbolChild.Release();

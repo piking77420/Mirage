@@ -23,17 +23,18 @@ mirage::MirageContext::MirageContext(const std::vector<std::wstring>& targetRefl
 			switch (itm.enumTypeValue)
 			{
 			case EnumTypeValue::INT:
-				std::cout << itm.value.intv;
+				std::cout << " : " <<  itm.value.intv;
 				break;
 			case EnumTypeValue::UIINT:
-				std::cout << itm.value.uintv;
+				std::cout << " : " <<  itm.value.uintv;
 				break;
 			case EnumTypeValue::FLOAT:
-				std::cout << itm.value.floatv;
+				std::cout << " : " <<  itm.value.floatv;
 				break;
 			case EnumTypeValue::DOUBLE:
-				std::cout << itm.value.doublev;
+				std::cout << " : " <<  itm.value.doublev;
 				break;
+			case EnumTypeValue::NONE:
 			default:
 				break;
 			}

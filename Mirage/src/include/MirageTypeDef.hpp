@@ -9,6 +9,7 @@ namespace mirage
 {
 	enum EnumTypeValue
 	{
+		NONE,
 		INT,
 		UIINT,
 		FLOAT,

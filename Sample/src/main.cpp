@@ -37,6 +37,11 @@ class MyClassVirtual
 public:
     MyClassVirtual() = default;
    virtual ~MyClassVirtual() = default;
+
+   __forceinline virtual const char* PrintClassName() const final
+   {
+      return typeid(*this).name();
+   }
 private:
 
 };
@@ -56,6 +61,10 @@ private:
 int main(int arc, char** arcv)
 {
     MyEnum myEnu;
+    MyClassVirtual v;
+    std::cout << v.PrintClassName() << '\n';
+    MyClassDerived d;
+    std::cout << d.PrintClassName() << '\n';
 
 #ifdef _DEBUG
     std::vector<std::wstring> s = {

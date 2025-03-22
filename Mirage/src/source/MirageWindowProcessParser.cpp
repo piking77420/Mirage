@@ -14,6 +14,14 @@
 #include <atlbase.h>
 #include <atlcom.h>
 
+std::string cleanUpTypeName(const std::string& typeName) 
+{
+    std::regex classStructRegex(R"(class\s+|struct\s+)");
+
+    return std::regex_replace(typeName, classStructRegex, "");
+}
+
+
 CComPtr<IDiaDataSource> dataSource;
 
 static uint64_t symhandle = 42; // no need to be handle

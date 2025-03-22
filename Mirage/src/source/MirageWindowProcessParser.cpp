@@ -1,7 +1,6 @@
 #include "MirageWindowProcessParser.hpp"
 
 #include "MirageTypeDef.hpp"
-#include "simple_type_name.hpp"
 
 #include <cassert>
 #include <iostream>
@@ -161,6 +160,7 @@ void HandleUserType(mirage::MirageContextData* mirageContextData, CComPtr<IDiaSe
 
         if (SUCCEEDED(symbol->get_name(&name)))
         {
+#if 0
             // SHOUDL USE THIS TO LINK APP RUNTIME TO DATA
             std::string sname = cleanUpTypeName(typeid(std::vector<std::wstring>).name());
             std::wstring wname = name;
@@ -170,19 +170,29 @@ void HandleUserType(mirage::MirageContextData* mirageContextData, CComPtr<IDiaSe
             {
                 //__debugbreak();
             }
-
+#endif
 
             CComPtr<IDiaEnumSymbols> enumfieldSymbolMember;
             if (SUCCEEDED(symbol->findChildren(SymTagData, nullptr, nsfCaseInsensitive, &enumfieldSymbolMember)))
             {
-                /*
-                HRESULT resultEnumMember;
 
-                wchar_t* fieldName = nullptr;
-                if (SUCCEEDED(symbolChild->get_name(&fieldName)))
+                HRESULT resultFiel;
+                CComPtr<IDiaSymbol> symbolFieldChild;
+
+                while (SUCCEEDED(resultFiel = enumfieldSymbolMember->Next(1, &symbolFieldChild, &cout)) && cout > 0)
                 {
+                    if (!symbolFieldChild)
+                        continue;
 
-                }*/
+                    wchar_t* fieldName = nullptr;
+                    if (SUCCEEDED(symbolFieldChild->get_name(&fieldName)))
+                    {
+                        std::wcout << fieldName << '\n';
+                    }
+
+                    symbolFieldChild.Release();
+                }
+               
 
                 enumfieldSymbolMember.Release();
             }

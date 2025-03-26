@@ -11,6 +11,8 @@ namespace mirage
 
 		~MirageContext() = default;
 
+		const MirageType* GetType(const std::string& className);
+
 	private:
 		MirageContextData m_Data;
 	};

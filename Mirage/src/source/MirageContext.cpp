@@ -12,6 +12,7 @@ mirage::MirageContext::MirageContext(const std::vector<std::wstring>& targetRefl
 
 	Init();
 	ParseDebugFile(&m_Data, targetReflect);
+	return;
 
 	for (auto& it : m_Data.mirageEnum)
 	{
@@ -42,6 +43,13 @@ mirage::MirageContext::MirageContext(const std::vector<std::wstring>& targetRefl
 		}
 	}
 
+
 }
 
 
+const mirage::MirageType* mirage::MirageContext::GetType(const std::string& className)
+{
+	auto it = m_Data.mirageUserType.find(className);
+
+	return it != m_Data.mirageUserType.end() ? &it->second : nullptr;
+}

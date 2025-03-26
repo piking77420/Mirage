@@ -42,18 +42,25 @@ namespace mirage
 		std::vector<EnumMember> enumMember;
 	};
 
-	struct Field
+	struct MirageField
 	{
-		EnumTypeValue enumTypeValue;
+		std::string name;
 		uint32_t offset;
+	};
+
+	struct MirageType
+	{
+		std::string typeName;
+		std::vector<MirageField> fields;
 	};
 
 
 	struct MirageContextData
 	{
 		std::mutex lock;
-		size_t mirageIdCount = 0;
-
 		std::vector<MirageEnum> mirageEnum;
+
+		// string from typeid().name
+		std::unordered_map<std::string, MirageType> mirageUserType;
 	};
 }

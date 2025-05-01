@@ -2,13 +2,15 @@
 
 #include <iostream>
 
+#include "MirageHash.hpp"
+
 #ifdef _WIN32
 #include "MirageWindowProcessParser.hpp"
 #endif
 
 mirage::MirageContext::MirageContext(const std::vector<std::wstring>& targetReflect)
 {
-	std::lock_guard<std::mutex>_(m_Data.lock);
+	std::scoped_lock<std::mutex>_(m_Data.lock);
 
 	Init();
 	ParseDebugFile(&m_Data, targetReflect);
@@ -49,7 +51,9 @@ mirage::MirageContext::MirageContext(const std::vector<std::wstring>& targetRefl
 
 const mirage::MirageType* mirage::MirageContext::GetType(const std::string& className)
 {
-	auto it = m_Data.mirageUserType.find(className);
+	const MirageTypeId id = HashStringToId(className.c_str());
+
+	auto it = m_Data.mirageUserType.find(id);
 
 	return it != m_Data.mirageUserType.end() ? &it->second : nullptr;
 }

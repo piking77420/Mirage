@@ -5,10 +5,13 @@
 #include <string>
 #include <unordered_map>
 
+#include <guiddef.h>
+
 
 namespace mirage
 {
-	using MirageTypeId = size_t;
+	using MirageTypeId = uint32_t;
+	using MirageTypeHashFunction = uint32_t(*)(const char*);
 
 	union TypeValue
 	{
@@ -44,13 +47,22 @@ namespace mirage
 
 	struct MirageField
 	{
+		MirageTypeId typeId;
 		std::string name;
 		uint32_t offset;
 	};
 
+	struct MirageType;
+
+	struct MirageMethod
+	{
+		uint64_t procAddress;
+	};
+
 	struct MirageType
 	{
-		std::string typeName;
+		std::string name;
+		MirageTypeId mirageTypeId;
 		std::vector<MirageField> fields;
 	};
 
@@ -60,7 +72,13 @@ namespace mirage
 		std::mutex lock;
 		std::vector<MirageEnum> mirageEnum;
 
-		// string from typeid().name
-		std::unordered_map<std::string, MirageType> mirageUserType;
+		std::unordered_map<MirageTypeId, MirageType> mirageUserType;
 	};
+
+	void AddMirageType(MirageContextData* _mirageContext,const std::string& _s, MirageTypeId _typeId, MirageType mirageType);
+
+	bool ContainType(MirageContextData* _mirageContext, mirage::MirageTypeId id);
+
+	std::string GetStringFromWchart(wchar_t* ptr);
+
 }

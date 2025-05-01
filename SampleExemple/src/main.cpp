@@ -1,76 +1,35 @@
 
+#if 0
 
-enum MyEnum
-{
-    ONE,
-    TWO,
-    COUNT
-};
+#include "../../Mirage/src/include/CompiletimeKey.hpp"
+#include <typeinfo>
+#include <memory>
 
-enum class MyEnumClass
-{
-    ONE,
-    TWO,
-    COUNT
-};
+#endif
+#include "include/header.hpp"
 
 
-struct Vec2
-{
-    float x, y;
-};
-
-class MyClass
-{
-public:
-
-    Vec2 vec2;
-
-    int field1;
-
-    float field2;
-
-	MyClass() = default;
-	~MyClass() = default;
-private:
-
-};
-
-class MyClassVirtual
-{
-public:
-    MyClassVirtual() = default;
-   virtual ~MyClassVirtual() = default;
-
-   float field3;
-
-   /*
-   __forceinline virtual const char* PrintClassName() const final
-   {
-      return typeid(*this).name();
-   }*/
-private:
-
-};
-
-class MyClassDerived : public MyClassVirtual
-{
-public:
-    MyClassDerived() = default;
-
-    ~MyClassDerived() override = default;
-private:
-
-};
 
 int main(int arc, char** arcv)
 {
     MyEnum myEnu;
+    MyClass myClass;
+    myClass.field1 = 2.;
+    myClass.field2 = 2.f;
+    myClass.vec2 = { 0.f, 0.f };
+
+
     MyClassVirtual v;
-    MyClassDerived d;
-    d.field3 = 3232.f;
+    int c = v.GetInt();
 
- 
+    MyClassDerived d = {};
+    d.field2 = 3232.f;
 
-    return (int)d.field3;
+#if 0
+    std::shared_ptr<MyClassVirtual> sharedPtr = std::make_shared<MyClassDerived>();
+
+    std::string name = skydown::get_type_name(sharedPtr.get());
+#endif
+    
+    return (int)d.field2;
 }

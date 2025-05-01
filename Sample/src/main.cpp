@@ -2,11 +2,32 @@
 #include <iostream>
 
 #include "MirageContext.hpp"
+#include "../../SampleExemple/src/include/header.hpp"
+#include <typeinfo>
 
+uint32_t MyHashFun(const char* ptr)
+{
+    return {};
+}
 
+void PrintInfoOfType(mirage::MirageContext* _context, const std::string& _s)
+{
+    if (auto t = _context->GetType(_s))
+    {
+        std::cout << _s << '\n';
+
+        for (auto& it : t->fields)
+        {
+            std::cout << it.name << " , offset = " << it.offset << '\n';
+
+        }
+        std::cout << '\n';
+    }
+}
 
 int main(int arc, char** arcv)
 {
+    mirage::MirageTypeHashFunction hash(&MyHashFun);
 
 #ifdef _DEBUG
     std::vector<std::wstring> s = {
@@ -19,16 +40,13 @@ int main(int arc, char** arcv)
 #endif // DEBUG
     mirage::MirageContext mirageContext(s);
 
-    if (auto t = mirageContext.GetType("MyClassVirtual"))
-    {
-        std::cout << t->typeName << '\n';
+   
+    /*
+    PrintInfoOfType(&mirageContext, "Vec2");
+    PrintInfoOfType(&mirageContext, "MyClassVirtual");
+    PrintInfoOfType(&mirageContext, "MyClass");*/
 
-        for (auto& it : t->fields)
-        {
-            std::cout << it.name << " : " <<  it.offset << '\n';
-
-        }
-    }
+    auto it = mirageContext.GetType("MyClassDerived");
 
 
     std::getchar();

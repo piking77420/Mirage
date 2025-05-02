@@ -12,10 +12,14 @@ enum class MyEnumClass
     COUNT
 };
 
+struct TestStruct
+{
+    int x1;
+};
 
 struct Vec2
 {
-    float x, y;
+    double x, y;
 };
 
 class MyClass

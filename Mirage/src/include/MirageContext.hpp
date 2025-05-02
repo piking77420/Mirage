@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MirageTypeDef.hpp"
+//#include "CompiletimeKey.hpp"
 
 namespace mirage
 {
@@ -11,11 +12,25 @@ namespace mirage
 
 		~MirageContext() = default;
 
-		const MirageType* GetType(const std::string& className);
+		//.template <typename T>
+		//const MirageType* GetType() const;
+
+		const MirageType* GetType(const std::string& className) const;
+
+		const MirageType* GetType(const MirageTypeId id) const;
 
 	private:
 		MirageContextData m_Data;
+
 	};
+
+	/*
+	template<typename T>
+	inline const MirageType* MirageContext::GetType() const
+	{
+		// nedd to fix
+		//return GetType(COMPILE_TIME_TYPE_KEY(T));
+	}*/
 
 }
 

@@ -22,20 +22,24 @@ namespace mirage
 		double doublev;
 	};
 
-	enum EnumTypeValue
+	enum TrivialType
 	{
-		NONE,
+		VOID,
 		BOOL,
+		CHAR,
+		WCHAR,
 		INT,
 		UIINT,
 		FLOAT,
 		DOUBLE,
+
+		COUNT,
 	};
 
 	struct EnumMember
 	{
 		std::string name;
-		EnumTypeValue enumTypeValue;
+		TrivialType enumTypeValue;
 		TypeValue value;
 	};
 
@@ -45,24 +49,29 @@ namespace mirage
 		std::vector<EnumMember> enumMember;
 	};
 
+	struct MirageType;
+
+	struct MirageTypeDescriptor
+	{
+		bool isTrivial;
+		union
+		{
+			TrivialType trivialType;
+			MirageTypeId mirageTypeId;
+		}mirageType;
+	};
 	struct MirageField
 	{
-		MirageTypeId typeId;
+		MirageTypeDescriptor mirageTypeDescriptor;
 		std::string name;
 		uint32_t offset;
 	};
 
-	struct MirageType;
-
-	struct MirageMethod
-	{
-		uint64_t procAddress;
-	};
-
 	struct MirageType
 	{
+		MirageTypeDescriptor mirageTypeDescriptor;
+		size_t size;
 		std::string name;
-		MirageTypeId mirageTypeId;
 		std::vector<MirageField> fields;
 	};
 

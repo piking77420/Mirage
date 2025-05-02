@@ -25,19 +25,19 @@ mirage::MirageContext::MirageContext(const std::vector<std::wstring>& targetRefl
 			std::cout << itm.name;
 			switch (itm.enumTypeValue)
 			{
-			case EnumTypeValue::INT:
+			case TrivialType::INT:
 				std::cout << " : " <<  itm.value.intv;
 				break;
-			case EnumTypeValue::UIINT:
+			case TrivialType::UIINT:
 				std::cout << " : " <<  itm.value.uintv;
 				break;
-			case EnumTypeValue::FLOAT:
+			case TrivialType::FLOAT:
 				std::cout << " : " <<  itm.value.floatv;
 				break;
-			case EnumTypeValue::DOUBLE:
+			case TrivialType::DOUBLE:
 				std::cout << " : " <<  itm.value.doublev;
 				break;
-			case EnumTypeValue::NONE:
+			case TrivialType::COUNT:
 			default:
 				break;
 			}
@@ -49,10 +49,15 @@ mirage::MirageContext::MirageContext(const std::vector<std::wstring>& targetRefl
 }
 
 
-const mirage::MirageType* mirage::MirageContext::GetType(const std::string& className)
+const mirage::MirageType* mirage::MirageContext::GetType(const std::string& className) const
 {
 	const MirageTypeId id = HashStringToId(className.c_str());
 
+	return GetType(id);
+}
+
+const  mirage::MirageType* mirage::MirageContext::GetType(const  mirage::MirageTypeId id) const
+{
 	auto it = m_Data.mirageUserType.find(id);
 
 	return it != m_Data.mirageUserType.end() ? &it->second : nullptr;

@@ -23,7 +23,7 @@ int main(int arc, char** arcv)
     int c = v.GetInt();
 
     MyClassDerived d = {};
-    d.field2 = 3232.f;
+    d.field2 = 3232.f + c;
 
 #if 0
     std::shared_ptr<MyClassVirtual> sharedPtr = std::make_shared<MyClassDerived>();

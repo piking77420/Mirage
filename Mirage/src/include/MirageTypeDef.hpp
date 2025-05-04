@@ -11,6 +11,7 @@
 namespace mirage
 {
 	using MirageTypeId = uint32_t;
+	constexpr MirageTypeId NullMirageTypeId = static_cast<MirageTypeId>(-1);
 	using MirageTypeHashFunction = uint32_t(*)(const char*);
 
 	union TypeValue
@@ -69,10 +70,13 @@ namespace mirage
 
 	struct MirageType
 	{
-		MirageTypeDescriptor mirageTypeDescriptor;
+		// TO DO CAHNGE FOR TYPE ID
+		MirageTypeId mirageTypeId;
 		size_t size;
 		std::string name;
 		std::vector<MirageField> fields;
+
+		std::vector<MirageTypeId> inhertedType;
 	};
 
 

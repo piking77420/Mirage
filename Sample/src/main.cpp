@@ -57,23 +57,45 @@ void PrintFieldInfo(const mirage::MirageContext* _contex, const mirage::MirageFi
     }
     else
     {
-        auto type = _contex->GetType(f.mirageTypeDescriptor.mirageType.mirageTypeId);
+         auto type = _contex->GetType(f.mirageTypeDescriptor.mirageType.mirageTypeId);
          std::cout << "field type name : " << type->name << '\n';
-         std::cout << "field type id : " << type->mirageTypeDescriptor.mirageType.mirageTypeId << '\n';
+         std::cout << "field type id : " << type->mirageTypeId << '\n';
          std::cout << "field type size : " << type->size << '\n';
 
     } 
 
 }
 
+void PrintIneritence(const mirage::MirageContext* _contex, const mirage::MirageType& _mirageType)
+{
+    std::cout << "Inherited type" << '\n';
+
+    for (auto& it : _mirageType.inhertedType)
+    {
+        const  mirage::MirageType* mtype = _contex->GetType(it);
+        if (mtype)
+        {
+            std::cout << mtype->name << '\n';
+            PrintIneritence(_contex, *mtype);
+        }
+        else
+        {
+            assert(false && "that means there is no order for type deduction or missin type");
+        }
+    }
+  
+}
+
 void PrintInfoOfType(const mirage::MirageContext* _contex, const mirage::MirageType& _mirageType)
 {
-    if (_mirageType.mirageTypeDescriptor.isTrivial)
-        return;
 
     std::cout << "Type : " << _mirageType.name << '\n';
     std::cout << "size : " << _mirageType.size << '\n';
-    std::cout << "id : " << _mirageType.mirageTypeDescriptor.mirageType.mirageTypeId << '`\n';
+    std::cout << "id : " << _mirageType.mirageTypeId << '\n';
+
+    if (!_mirageType.inhertedType.empty())
+        PrintIneritence(_contex, _mirageType);
+
 
     for (auto& it : _mirageType.fields)
     {
@@ -106,11 +128,19 @@ int main(int arc, char** arcv)
     PrintInfoOfType(&mirageContext, "MyClassVirtual");
     PrintInfoOfType(&mirageContext, "MyClass");*/
 
-    auto it = mirageContext.GetType("Vec2");
+    auto it = mirageContext.GetType<Vec2>();
     PrintInfoOfType(&mirageContext, *it);
 
-    it = mirageContext.GetType("MyClass");
+    it = mirageContext.GetType<MyClass>();
     PrintInfoOfType(&mirageContext, *it);
+
+
+    it = mirageContext.GetType<MyClassVirtual>();
+    PrintInfoOfType(&mirageContext, *it);
+
+    it = mirageContext.GetType<MyClassDerived>();
+    PrintInfoOfType(&mirageContext, *it);
+  
 
     std::getchar();
 

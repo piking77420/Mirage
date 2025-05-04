@@ -185,18 +185,13 @@ bool ExtractUDTOrBaseClassFromSymbol(mirage::MirageContextData* _data, CComPtr<I
     }
 
     fieldtypeName = mirage::GetStringFromWchart(fieldTypeName);
-    mirage::MirageTypeId fieldTypeId = mirage::HashStringToId(fieldtypeName.c_str());
-
-    auto it = _data->mirageUserType.find(fieldTypeId);
-    bool containType = it != _data->mirageUserType.end();
-    mirage::MirageType* fieldMirageType = containType ? &it->second : nullptr;
 
     _f->mirageTypeDescriptor.isTrivial = false;
-    _f->mirageTypeDescriptor.mirageType.mirageTypeId = fieldTypeId;
+    _f->mirageTypeDescriptor.mirageType.mirageTypeId = mirage::HashStringToId(fieldtypeName.c_str());
     _f->name = std::move(fieldtypeName);
 }
 
-bool ParseUdtField(mirage::MirageContextData* mirageContextData, CComPtr<IDiaSymbol>& parentPSymbol, mirage::MirageType* MirageTypeParent)
+bool ParseUdtField(mirage::MirageContextData* mirageContextData, CComPtr<IDiaSymbol>& parentPSymbol, mirage::MirageType* parsedType)
 {
     CComPtr<IDiaEnumSymbols> enumSymbolsFields;
     if (FAILED(parentPSymbol->findChildren(SymTagNull, NULL, nsNone, &enumSymbolsFields)))
@@ -244,6 +239,8 @@ bool ParseUdtField(mirage::MirageContextData* mirageContextData, CComPtr<IDiaSym
             goto ReleasefieldType;
         }
 
+        
+
         mirage::MirageField f;
 
         switch (typeTag)
@@ -254,12 +251,21 @@ bool ParseUdtField(mirage::MirageContextData* mirageContextData, CComPtr<IDiaSym
                     goto ReleasefieldType; 
             }
         break;
-        case SymTagBaseClass:
+        
         case SymTagUDT:
             {
                 if (!ExtractUDTOrBaseClassFromSymbol(mirageContextData, fieldType, &f))
                     goto ReleasefieldType;
+
+                // seems to work when herited but not in member (so it's ok )
+                BOOL inhertied;
+                if (!f.mirageTypeDescriptor.isTrivial && pSymbolfield->get_virtualBaseClass(&inhertied) == S_OK)
+                {
+                    //DebugBreak();
+                    parsedType->inhertedType.push_back(f.mirageTypeDescriptor.mirageType.mirageTypeId);
+                }
             }
+            break;
         break;
         default:
             break;
@@ -267,7 +273,7 @@ bool ParseUdtField(mirage::MirageContextData* mirageContextData, CComPtr<IDiaSym
         f.offset = static_cast<size_t>(fieldOffSet);
         f.name = std::move(fieldName);
  
-        MirageTypeParent->fields.push_back(f);
+        parsedType->fields.push_back(f);
         pSymbolfield.Release();
     }
 
@@ -292,7 +298,7 @@ bool ParseUdt(mirage::MirageContextData* mirageContextData, CComPtr<IDiaSymbol>&
     mirage::MirageTypeId id = mirage::HashStringToId(typenName.c_str());
 
 #if 0
-    if (typenName == "Vec2")
+    if (typenName == "MyClassDerived")
     {
         __debugbreak();
     }
@@ -300,9 +306,8 @@ bool ParseUdt(mirage::MirageContextData* mirageContextData, CComPtr<IDiaSymbol>&
     if (mirage::ContainType(mirageContextData, id))
         return false;
 
-    mirageType->mirageTypeDescriptor.isTrivial = false;
     *typeId = id;
-    mirageType->mirageTypeDescriptor.mirageType.mirageTypeId = *typeId;
+    mirageType->mirageTypeId = *typeId;
     mirageType->size = static_cast<size_t>(lenght);
     mirageType->name = std::move(typenName);
 

@@ -19,7 +19,9 @@ struct TestStruct
 
 struct Vec2
 {
-    double x, y;
+    double x;
+        
+    double y;
 };
 
 class MyClass
@@ -38,6 +40,8 @@ private:
 
 };
 
+//typed InheritedClass MyClass;
+
 class MyClassVirtual : public MyClass
 {
 public:
@@ -46,7 +50,7 @@ public:
 
     float field3;
 
-    int GetInt()
+    virtual  int GetInt()
     {
         return 3;
     }
@@ -60,12 +64,20 @@ private:
 // YOU will get no child beacause MyClassDerived has no field 
 // On the other hand using SymTagUDT or SymTagNull you get MyClass
 // so you can iterate over this intead
-class MyClassDerived : public MyClass
+class MyClassDerived : public MyClassVirtual 
 {
 public:
+
+    
+
     MyClassDerived() = default;
 
     ~MyClassDerived()= default;
+
+    int GetInt()
+    {
+        return 8;
+    }
 private:
 
 };

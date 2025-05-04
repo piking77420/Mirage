@@ -5,10 +5,16 @@
 
 namespace mirage
 {
+	struct CreateMirageContext
+	{
+		std::vector<std::wstring> targetReflect;
+		MirageTypeAttributeToString mirageTypeAttributeToString;
+	};
+
 	class MirageContext
 	{
 	public:
-		MirageContext(const std::vector<std::wstring>& targetReflect);
+		MirageContext(const CreateMirageContext& _createMirageContext);
 
 		~MirageContext() = default;
 

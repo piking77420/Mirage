@@ -1,3 +1,28 @@
+
+enum UserAttribute
+{
+    REFLECT,
+    SERIALIZE,
+    MIN_MAX,
+
+    COUT
+};
+
+#define REFLECT(x) \
+static constexpr bool __REFLECT__##x##_ = true; \
+
+#define SERIALIZE(x) \
+static constexpr bool __SERIALIZE__##x##_ = true; \
+
+#define MIN_MAX(x, min, max) \
+struct  Pair##x##_\
+{ \
+    decltype(x) first;\
+    decltype(x) second;\
+};\
+static constexpr Pair##x##_ MIN_MAX__##x##_ = {min, max}; \
+
+
 enum MyEnum
 {
     ONE,
@@ -15,6 +40,14 @@ enum class MyEnumClass
 struct TestStruct
 {
     int x1;
+    SERIALIZE(x1);
+
+    int* ptr = nullptr;
+
+    float v;
+    MIN_MAX(v, 0.f, 10.f);
+
+    char s[24];
 };
 
 struct Vec2

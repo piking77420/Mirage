@@ -7,12 +7,16 @@
 
 #include <guiddef.h>
 
+#define START_ATTRIBUTE "__"
+#define MAX_ATTRIBUTE 64;
 
 namespace mirage
 {
 	using MirageTypeId = uint32_t;
 	constexpr MirageTypeId NullMirageTypeId = static_cast<MirageTypeId>(-1);
 	using MirageTypeHashFunction = uint32_t(*)(const char*);
+
+	using MirageTypeAttributeToString = uint32_t(*)(const char*);
 
 	union TypeValue
 	{
@@ -52,20 +56,45 @@ namespace mirage
 
 	struct MirageType;
 
+	enum MiratageTypeDescriptorFlags : uint8_t
+	{
+		NONE = 0,
+		TRIVIAL = 0 << 1,
+		PTR = 0 << 2,
+		ARRAY = 0 << 2,
+	};
+	using MiratageTypeDescriptorFlagBit = uint8_t;
+
+	struct MirageArray
+	{
+		MirageTypeId mirageTypeId;
+		// can add 4 byte
+		size_t size;
+	};
+
 	struct MirageTypeDescriptor
 	{
-		bool isTrivial;
+		MiratageTypeDescriptorFlagBit miratageTypeDescriptorFlagBit;
 		union
 		{
-			TrivialType trivialType;
 			MirageTypeId mirageTypeId;
+			TrivialType trivialType;
+			MirageArray mirageArray;
 		}mirageType;
 	};
+
+	struct MirageAttributeHeader
+	{
+		uint64_t attributeType;
+		size_t dataSize;
+	};
+
 	struct MirageField
 	{
 		MirageTypeDescriptor mirageTypeDescriptor;
 		std::string name;
 		uint32_t offset;
+		std::vector<uint8_t> attributeData;
 	};
 
 	struct MirageType
@@ -84,8 +113,8 @@ namespace mirage
 	{
 		std::mutex lock;
 		std::vector<MirageEnum> mirageEnum;
-
 		std::unordered_map<MirageTypeId, MirageType> mirageUserType;
+		MirageTypeAttributeToString mirageTypeAttributeToString;
 	};
 
 	void AddMirageType(MirageContextData* _mirageContext,const std::string& _s, MirageTypeId _typeId, MirageType mirageType);

@@ -25,6 +25,9 @@ int main(int arc, char** arcv)
     MyClassDerived d = {};
     d.field2 = 3232.f + c;
 
+    TestStruct destStruct = {};
+    destStruct.ptr = &c;
+    *destStruct.ptr = *destStruct.ptr + 1;
 #if 0
     std::shared_ptr<MyClassVirtual> sharedPtr = std::make_shared<MyClassDerived>();
 

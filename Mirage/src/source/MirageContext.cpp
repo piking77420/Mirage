@@ -8,12 +8,14 @@
 #include "MirageWindowProcessParser.hpp"
 #endif
 
-mirage::MirageContext::MirageContext(const std::vector<std::wstring>& targetReflect)
+mirage::MirageContext::MirageContext(const CreateMirageContext& _createMirageContext)
 {
 	std::scoped_lock<std::mutex>_(m_Data.lock);
 
+	m_Data.mirageTypeAttributeToString = _createMirageContext.mirageTypeAttributeToString;
+
 	Init();
-	ParseDebugFile(&m_Data, targetReflect);
+	ParseDebugFile(&m_Data, _createMirageContext.targetReflect);
 }
 
 

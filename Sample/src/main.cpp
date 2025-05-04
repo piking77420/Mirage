@@ -49,7 +49,7 @@ void PrintFieldInfo(const mirage::MirageContext* _contex, const mirage::MirageFi
     std::cout << "field name : " << f.name << '\n';
     std::cout << "field offset : " << f.offset << '\n';
 
-    if (f.mirageTypeDescriptor.isTrivial)
+    if (f.mirageTypeDescriptor.miratageTypeDescriptorFlagBit & mirage::PTR)
     {
         auto it = TrivialTypeToStringSize(f.mirageTypeDescriptor.mirageType.trivialType);
         std::cout << "field type name : " << it.first << '\n';
@@ -107,6 +107,22 @@ void PrintInfoOfType(const mirage::MirageContext* _contex, const mirage::MirageT
    
 }
 
+void Print(mirage::MirageContext& _context)
+{
+    auto it = _context.GetType<Vec2>();
+    PrintInfoOfType(&_context, *it);
+
+    it = _context.GetType<MyClass>();
+    PrintInfoOfType(&_context, *it);
+
+
+    it = _context.GetType<MyClassVirtual>();
+    PrintInfoOfType(&_context, *it);
+
+    it = _context.GetType<MyClassDerived>();
+    PrintInfoOfType(&_context, *it);
+}
+
 int main(int arc, char** arcv)
 {
     mirage::MirageTypeHashFunction hash(&MyHashFun);
@@ -122,25 +138,11 @@ int main(int arc, char** arcv)
 #endif // DEBUG
     mirage::MirageContext mirageContext(s);
 
-   
-    /*
-    PrintInfoOfType(&mirageContext, "Vec2");
-    PrintInfoOfType(&mirageContext, "MyClassVirtual");
-    PrintInfoOfType(&mirageContext, "MyClass");*/
+#if 0
+    Print(mirageContext);
+#endif
+    auto it = mirageContext.GetType<TestStruct>();
 
-    auto it = mirageContext.GetType<Vec2>();
-    PrintInfoOfType(&mirageContext, *it);
-
-    it = mirageContext.GetType<MyClass>();
-    PrintInfoOfType(&mirageContext, *it);
-
-
-    it = mirageContext.GetType<MyClassVirtual>();
-    PrintInfoOfType(&mirageContext, *it);
-
-    it = mirageContext.GetType<MyClassDerived>();
-    PrintInfoOfType(&mirageContext, *it);
-  
 
     std::getchar();
 

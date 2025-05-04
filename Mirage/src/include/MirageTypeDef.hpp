@@ -14,9 +14,7 @@ namespace mirage
 {
 	using MirageTypeId = uint32_t;
 	constexpr MirageTypeId NullMirageTypeId = static_cast<MirageTypeId>(-1);
-	using MirageTypeHashFunction = uint32_t(*)(const char*);
 
-	using MirageTypeAttributeToString = uint32_t(*)(const char*);
 
 	union TypeValue
 	{
@@ -108,6 +106,8 @@ namespace mirage
 		std::vector<MirageTypeId> inhertedType;
 	};
 
+	using MirageTypeHashFunction = uint32_t(*)(const char*);
+	using MirageTypeAttributeToString = uint32_t(*)(const char*, size_t );
 
 	struct MirageContextData
 	{

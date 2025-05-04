@@ -58,6 +58,9 @@ void PrintFieldInfo(const mirage::MirageContext* _contex, const mirage::MirageFi
     else
     {
          auto type = _contex->GetType(f.mirageTypeDescriptor.mirageType.mirageTypeId);
+         if (!type)
+             return;
+
          std::cout << "field type name : " << type->name << '\n';
          std::cout << "field type id : " << type->mirageTypeId << '\n';
          std::cout << "field type size : " << type->size << '\n';
@@ -109,8 +112,12 @@ void PrintInfoOfType(const mirage::MirageContext* _contex, const mirage::MirageT
 
 void Print(mirage::MirageContext& _context)
 {
-    auto it = _context.GetType<Vec2>();
+    auto it = _context.GetType<MyClass::Vec2>();
     PrintInfoOfType(&_context, *it);
+
+    std::string_view sv = "Vec2";
+    it = _context.GetType(mirage::HashStringToId(sv.data(), sv.size()));
+    assert(it == nullptr);
 
     it = _context.GetType<MyClass>();
     PrintInfoOfType(&_context, *it);
@@ -125,8 +132,6 @@ void Print(mirage::MirageContext& _context)
 
 int main(int arc, char** arcv)
 {
-    mirage::MirageTypeHashFunction hash(&MyHashFun);
-
 #ifdef _DEBUG
     std::vector<std::wstring> s = {
        { L"SampleExemple/Debug/SampleExemple.pdb" }
@@ -136,9 +141,15 @@ int main(int arc, char** arcv)
        { L"SampleExemple/Release/SampleExemple.pdb" }
     };
 #endif // DEBUG
-    mirage::MirageContext mirageContext(s);
+    mirage::CreateMirageContext createMirageContext =
+    {
+        s,
+        &AttributeNameToInt
+    };
 
-#if 0
+    mirage::MirageContext mirageContext(createMirageContext);
+
+#if 1
     Print(mirageContext);
 #endif
     auto it = mirageContext.GetType<TestStruct>();

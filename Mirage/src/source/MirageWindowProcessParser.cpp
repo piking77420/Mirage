@@ -6,18 +6,11 @@
 #include <iostream>
 #include <regex>
 
+#include "MirageAttribute.hpp"
+
 #ifdef _WIN32
 
-#include <Windows.h>
-// TO DO FIX IT IN CMAKE
-#include <../../../../DIA SDK/include/dia2.h>
-#include <psapi.h>
-#include <atlbase.h>
-#include <atlcom.h>
-#include <MirageHash.hpp>
-#include <locale>
-#include <codecvt>
-#undef VOID
+
 
 bool ParseUdt(mirage::MirageContextData* mirageContextData, CComPtr<IDiaSymbol>& symbol, mirage::MirageTypeId* typeId, mirage::MirageType* mirageType);
 
@@ -45,7 +38,7 @@ void OpenPdb(const std::wstring& pdbPath, CComPtr<IDiaSession>& session, CComPtr
 void HandleEnum(mirage::MirageContextData* mirageContextData, CComPtr<IDiaSession> session, CComPtr<IDiaSymbol> globalScope)
 {
     CComPtr<IDiaEnumSymbols> enumEnumSymbol;
-    HRESULT result = globalScope->findChildren(SymTagEnum, nullptr, nsfCaseInsensitive, &enumEnumSymbol);
+    HRESULT result = globalScope->findChildren(SymTagEnum, nullptr, nsNone, &enumEnumSymbol);
 
     HRESULT hr;
     ULONG cout = 0;
@@ -202,10 +195,70 @@ bool ExtractUDTOrBaseClassFromSymbol(mirage::MirageContextData* _data, CComPtr<I
 }
 
 
+bool ParseUdtSymbol(mirage::MirageContextData* mirageContextData, CComPtr<IDiaSymbol>& fieldType, DWORD symtag, 
+    std::string* _fieldName, CComPtr<IDiaSymbol>& pSymbolfield, mirage::MirageType* parsedType)
+{
+    LONG fieldOffSet = 0;
+    if (pSymbolfield->get_offset(&fieldOffSet) != S_OK)
+        return false;
+
+    ULONGLONG typeSize = 0;
+    if (fieldType->get_length(&typeSize) != S_OK)
+        return false;
+
+
+    mirage::MirageField f = {};
+
+    switch (symtag)
+    {
+    case SymTagBaseType:
+    {
+        if (!ExtractBaseTypeFromSymbol(fieldType, typeSize, &f))
+            return false;
+    }
+    break;
+
+    case SymTagUDT:
+    {
+        if (!ExtractUDTOrBaseClassFromSymbol(mirageContextData, fieldType, &f))
+            return false;
+
+        // seems to work when herited but not in member (so it's ok )
+        BOOL inhertied;
+        if (!(f.mirageTypeDescriptor.miratageTypeDescriptorFlagBit & mirage::TRIVIAL) && pSymbolfield->get_virtualBaseClass(&inhertied) == S_OK)
+        {
+            parsedType->inhertedType.push_back(f.mirageTypeDescriptor.mirageType.mirageTypeId);
+        }
+    }
+    break;
+    case SymTagPointerType:
+    {
+        if (!ExtractUDTOrBaseClassFromSymbol(mirageContextData, fieldType, &f))
+            return false;
+
+        f.mirageTypeDescriptor.miratageTypeDescriptorFlagBit |= mirage::PTR;
+    }
+    break;
+    case SymTagArrayType:
+    {
+        f.mirageTypeDescriptor.miratageTypeDescriptorFlagBit |= mirage::ARRAY;
+    }
+    break;
+    default:
+        break;
+    }
+    f.offset = static_cast<size_t>(fieldOffSet);
+    f.name = std::move(*_fieldName);
+
+    parsedType->fields.push_back(f);
+    return true;
+}
+
+
 bool ParseUdtField(mirage::MirageContextData* mirageContextData, CComPtr<IDiaSymbol>& parentPSymbol, mirage::MirageType* parsedType)
 {
     CComPtr<IDiaEnumSymbols> enumSymbolsFields;
-    if (FAILED(parentPSymbol->findChildren(SymTagNull, NULL, nsNone, &enumSymbolsFields)))
+    if (FAILED(parentPSymbol->findChildren(SymTagNull, NULL, nsfCaseInsensitive, &enumSymbolsFields)))
     {
         return false;
     }
@@ -222,15 +275,10 @@ bool ParseUdtField(mirage::MirageContextData* mirageContextData, CComPtr<IDiaSym
             continue;
         }
         std::string fieldName = mirage::GetStringFromWchart(fieldNamew);
-
-        LONG fieldOffSet = 0;
-        if (pSymbolfield->get_offset(&fieldOffSet) != S_OK)
-            goto RealeaseSymbol;
-        
-
+        std::string_view sv(fieldName);
 
         CComPtr<IDiaSymbol> fieldType;
-        if (pSymbolfield->get_type(&fieldType) != S_OK || !pSymbolfield)
+        if (pSymbolfield->get_type(&fieldType) != S_OK)
         {
             ReleasefieldType:
             fieldType.Release();
@@ -240,65 +288,22 @@ bool ParseUdtField(mirage::MirageContextData* mirageContextData, CComPtr<IDiaSym
         DWORD typeTag = 0;
         if (fieldType->get_symTag(&typeTag) != S_OK)
             goto ReleasefieldType;
-        
 
-        ULONGLONG typeSize = 0;
-        if (fieldType->get_length(&typeSize) != S_OK)
+
+        if (sv.substr(0, 2) == START_ATTRIBUTE)
+        {
+            std::string_view sv = std::string_view(fieldName);
+            ParseAttibute(mirageContextData, typeTag, sv.data() + strlen(START_ATTRIBUTE), pSymbolfield, parsedType);
             goto ReleasefieldType;
-        
-       
-        mirage::MirageField f = {};
-        
-        switch (typeTag)
-        {
-        case SymTagBaseType:
-            {
-                if (!ExtractBaseTypeFromSymbol(fieldType, typeSize, &f))
-                    goto ReleasefieldType; 
-            }
-        break;
-        
-        case SymTagUDT:
-            {
-                if (!ExtractUDTOrBaseClassFromSymbol(mirageContextData, fieldType, &f))
-                    goto ReleasefieldType;
-
-                // seems to work when herited but not in member (so it's ok )
-                BOOL inhertied;
-                if (!(f.mirageTypeDescriptor.miratageTypeDescriptorFlagBit & mirage::TRIVIAL) && pSymbolfield->get_virtualBaseClass(&inhertied) == S_OK)
-                {
-                    parsedType->inhertedType.push_back(f.mirageTypeDescriptor.mirageType.mirageTypeId);
-                }
-            }
-            break;
-        case SymTagPointerType: 
-            {
-                if (!ExtractUDTOrBaseClassFromSymbol(mirageContextData, fieldType, &f))
-                    goto ReleasefieldType;
-
-                f.mirageTypeDescriptor.miratageTypeDescriptorFlagBit |= mirage::PTR;
-            }
-            break;
-        case SymTagArrayType:
-            {
-
-
-                f.mirageTypeDescriptor.miratageTypeDescriptorFlagBit |= mirage::ARRAY;
-            }
-            break;
-        default:
-            break;
+            
         }
-        f.offset = static_cast<size_t>(fieldOffSet);
-        f.name = std::move(fieldName);
-
-        BOOL isptr;
-        if (fieldType->get_isPointerBasedOnSymbolValue(&isptr) == S_OK)
+        else
         {
-            DebugBreak();
+            //if (ParseUdtSymbol(mirageContextData, fieldType, typeTag, &fieldName, pSymbolfield, parsedType))
+              //  goto ReleasefieldType;
         }
- 
-        parsedType->fields.push_back(f);
+
+      
         pSymbolfield.Release();
     }
 
@@ -323,7 +328,7 @@ bool ParseUdt(mirage::MirageContextData* mirageContextData, CComPtr<IDiaSymbol>&
     mirage::MirageTypeId id = mirage::HashStringToId(typenName.c_str());
 
 #if 1
-    if (typenName == "TestStruct")
+    if (typenName == "MyClass::Vec2")
     {
         __debugbreak();
     }
@@ -426,4 +431,4 @@ void mirage::Destroy()
 {
     CoUninitialize();
 }
-#endif
+#endif // _WIN32

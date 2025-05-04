@@ -1,5 +1,7 @@
+#include <cstdint>
+#include <string>
 
-enum UserAttribute
+enum UserAttribute : uint32_t
 {
     REFLECT,
     SERIALIZE,
@@ -15,12 +17,33 @@ static constexpr bool __REFLECT__##x##_ = true; \
 static constexpr bool __SERIALIZE__##x##_ = true; \
 
 #define MIN_MAX(x, min, max) \
-struct  Pair##x##_\
+struct Pair##x##_\
 { \
     decltype(x) first;\
     decltype(x) second;\
 };\
-static constexpr Pair##x##_ MIN_MAX__##x##_ = {min, max}; \
+Pair##x##_ __MIN_MAX__##x##_ = {min, max}; \
+
+
+static inline uint32_t AttributeNameToInt(const char* _att, size_t size)
+{
+    if (std::strncmp("REFLECT", _att, size) == 0)
+    {
+        return REFLECT;
+    }
+
+    if (std::strncmp("SERIALIZE", _att, size) == 0)
+    {
+        return SERIALIZE;
+    }
+
+    if (std::strncmp("MIN_MAX", _att, size) == 0)
+    {
+        return MIN_MAX;
+    }
+
+    return -1;
+}
 
 
 enum MyEnum
@@ -50,16 +73,17 @@ struct TestStruct
     char s[24];
 };
 
-struct Vec2
-{
-    double x;
-        
-    double y;
-};
+
 
 class MyClass
 {
 public:
+    struct Vec2
+    {
+        double x;
+
+        double y;
+    };
 
     Vec2 vec2;
 

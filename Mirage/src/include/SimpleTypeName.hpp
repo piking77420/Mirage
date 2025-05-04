@@ -44,7 +44,7 @@ std::string type_string_raw_vptr(T* ptr) {
     return typeid(*ptr).name();
 }
 
-std::string remove_prefix_withoutPrefix(std::string&& s) {
+inline std::string remove_prefix_withoutPrefix(std::string&& s) {
     const std::string class_prefix = "class ";
     const std::string struct_prefix = "struct ";
 
@@ -73,22 +73,22 @@ constexpr std::size_t suffix_type_name_size =
 
 template <typename T>
 constexpr std::string_view long_name() {
-  std::string_view raw_name = type_to_string_raw<T>();
-  auto size = raw_name.size();
-  raw_name.remove_prefix(begin_type_name);
-  raw_name.remove_suffix(suffix_type_name_size);
-  std::string_view struct_name("struct ");
-  std::string_view class_name("class ");
+    std::string_view raw_name = type_to_string_raw<T>();
+    auto size = raw_name.size();
+    raw_name.remove_prefix(begin_type_name);
+    raw_name.remove_suffix(suffix_type_name_size);
+    std::string_view struct_name("struct ");
+    std::string_view class_name("class ");
 
-  if (raw_name.substr(0, struct_name.size()) == struct_name)
-    raw_name.remove_prefix(struct_name.size());
-  if (raw_name.substr(0, class_name.size()) == class_name)
-    raw_name.remove_prefix(class_name.size());
+    if (raw_name.substr(0, struct_name.size()) == struct_name)
+        raw_name.remove_prefix(struct_name.size());
+    if (raw_name.substr(0, class_name.size()) == class_name)
+        raw_name.remove_prefix(class_name.size());
 
-  while (!raw_name.empty() && raw_name.back() == ' ') {
-    raw_name.remove_suffix(1);
-  }
-  return raw_name;
+    while (!raw_name.empty() && raw_name.back() == ' ') {
+        raw_name.remove_suffix(1);
+    }
+    return raw_name;
 }
 
 #undef SIMPLE_TYPE_NAME_PRETTY_FUNCTION

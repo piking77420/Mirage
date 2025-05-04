@@ -14,38 +14,6 @@ mirage::MirageContext::MirageContext(const std::vector<std::wstring>& targetRefl
 
 	Init();
 	ParseDebugFile(&m_Data, targetReflect);
-	return;
-
-	for (auto& it : m_Data.mirageEnum)
-	{
-		std::cout << it.name << '\n';
-		for (auto& itm : it.enumMember)
-		{
-			
-			std::cout << itm.name;
-			switch (itm.enumTypeValue)
-			{
-			case TrivialType::INT:
-				std::cout << " : " <<  itm.value.intv;
-				break;
-			case TrivialType::UIINT:
-				std::cout << " : " <<  itm.value.uintv;
-				break;
-			case TrivialType::FLOAT:
-				std::cout << " : " <<  itm.value.floatv;
-				break;
-			case TrivialType::DOUBLE:
-				std::cout << " : " <<  itm.value.doublev;
-				break;
-			case TrivialType::COUNT:
-			default:
-				break;
-			}
-			std::cout << '\n';
-		}
-	}
-
-
 }
 
 

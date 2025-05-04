@@ -1,51 +1,25 @@
 #include <cstdint>
-#include <string>
+#include "../../../Mirage/src/include/MirageReflect.hpp"
+#include <tuple>
 
-enum UserAttribute : uint32_t
+/// Start
+
+template <int T, int T2>
+struct MinMaxI
 {
-    REFLECT,
-    SERIALIZE,
-    MIN_MAX,
-
-    COUT
+    static_assert(T < T2, "T should be less than T2");
 };
 
-#define REFLECT(x) \
-static constexpr bool __REFLECT__##x##_ = true; \
-
-#define SERIALIZE(x) \
-static constexpr bool __SERIALIZE__##x##_ = true; \
-
-#define MIN_MAX(x, min, max) \
-struct Pair##x##_\
-{ \
-    decltype(x) first;\
-    decltype(x) second;\
-};\
-Pair##x##_ __MIN_MAX__##x##_ = {min, max}; \
-
-
-static inline uint32_t AttributeNameToInt(const char* _att, size_t size)
+enum class EditorVisibility
 {
-    if (std::strncmp("REFLECT", _att, size) == 0)
-    {
-        return REFLECT;
-    }
-
-    if (std::strncmp("SERIALIZE", _att, size) == 0)
-    {
-        return SERIALIZE;
-    }
-
-    if (std::strncmp("MIN_MAX", _att, size) == 0)
-    {
-        return MIN_MAX;
-    }
-
-    return -1;
-}
+    EditAnywhere,
+    EditDefaultsOnly,
+    EditInstanceOnly,
+};
 
 
+/// 
+/// END OF EXEMPLE ATTRIBUTE
 enum MyEnum
 {
     ONE,
@@ -63,17 +37,15 @@ enum class MyEnumClass
 struct TestStruct
 {
     int x1;
-    SERIALIZE(x1);
+    MIRAGE_ATTRIBUTES(x1, Clamp(10, 100), EditEnywhere);
 
     int* ptr = nullptr;
 
     float v;
-    MIN_MAX(v, 0.f, 10.f);
 
     char s[24];
 };
-
-
+MIRAGE_CLASS(TestStruct)
 
 class MyClass
 {
